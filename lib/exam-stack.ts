@@ -134,6 +134,13 @@ export class ExamStack extends cdk.Stack {
       },
     });
     
+    topic1.addSubscription(new subs.SqsSubscription(queueA));               
+    topic1.addSubscription(new subs.LambdaSubscription(lambdaYFn));        
+
+    lambdaXFn.addEventSource(new events.SqsEventSource(queueA, {           
+      batchSize: 5,
+    }));
+    queueA.grantConsumeMessages(lambdaXFn);  
   }
 }
   
