@@ -20,6 +20,8 @@ export class ExamStack extends cdk.Stack {
 
     // Question 1 - Serverless REST API
 
+    
+
     // A table that stores data about a movie's crew, i.e. director, camera operators, etc.
     const table = new dynamodb.Table(this, "MoviesTable", {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -40,6 +42,8 @@ export class ExamStack extends cdk.Stack {
         REGION: "eu-west-1",
       },
     });
+
+    table.grantReadData(question1Fn);
 
     new custom.AwsCustomResource(this, "moviesddbInitData", {
       onCreate: {
@@ -71,6 +75,20 @@ export class ExamStack extends cdk.Stack {
     });
 
     const anEndpoint = api.root.addResource("patha");
+    const crew   = api.root.addResource("crew");
+    const movies = crew.addResource("movies");
+    const movie  = movies.addResource("{movieId}");
+
+    movie.addMethod(
+      "GET",
+      new apig.LambdaIntegration(question1Fn),
+      {
+        requestParameters: {
+          "method.request.path.movieId":     true,
+          "method.request.querystring.role": true,
+        },
+      },
+    );
 
 
     // ==================================
