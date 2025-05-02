@@ -133,14 +133,21 @@ export class ExamStack extends cdk.Stack {
         REGION: "eu-west-1",
       },
     });
-    
-    topic1.addSubscription(new subs.SqsSubscription(queueA));               
-    topic1.addSubscription(new subs.LambdaSubscription(lambdaYFn));        
+
+    topic1.addSubscription(new subs.SqsSubscription(queueA, {
+      filterPolicy: {
+        country: sns.SubscriptionFilter.stringFilter({
+          allowlist: ["Ireland", "China"], 
+        }),
+      },
+    }));                  
 
     lambdaXFn.addEventSource(new events.SqsEventSource(queueA, {           
       batchSize: 5,
     }));
     queueA.grantConsumeMessages(lambdaXFn);  
+
+    topic1.addSubscription(new subs.LambdaSubscription(lambdaYFn));
   }
 }
   
